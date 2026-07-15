@@ -51,9 +51,9 @@ jobs:
       
       - name: Setup AOSP Clang (clang-r416183b)
         run: |
-          echo Cloning AOSP clang-r416183b...
+          echo "Cloning AOSP clang-r416183b..."
           git clone --depth 1 --branch clang-r416183b https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 ~/aosp-clang
-          echo Clang installed at ~/aosp-clang
+          echo "Clang installed at ~/aosp-clang"
           ~/aosp-clang/bin/clang --version
       - name: Configure kernel
         run: |
