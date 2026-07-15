@@ -1,8 +1,12 @@
 name: Build GKI 5.10.252
 
 
+
+
 on:
   workflow_dispatch:
+
+
 
 
 jobs:
@@ -15,6 +19,8 @@ jobs:
           sudo apt-get install -y flex bison bc libssl-dev
 
 
+
+
       - name: Clone kernel source
         run: |
           git clone --depth 1 --branch android12-5.10.252_r00 \
@@ -23,19 +29,17 @@ jobs:
           git log --oneline -1
 
 
-      - name: Setup AOSP Clang 12.0.5 (clang-r416183b)
+
+
+      - name: Setup Clang 12 (LLVM 12.0.1)
         run: |
-          echo "Downloading AOSP clang-r416183b..."
-          mkdir -p ~/aosp-clang
-          cd ~/aosp-clang
-          wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/clang-r416183b.tar.gz -O clang.tar.gz
-          tar xzf clang.tar.gz
+          echo "Downloading LLVM clang 12.0.1..."
+          mkdir -p ~/clang12
+          cd ~/clang12
+          wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz -O clang.tar.xz
+          tar xf clang.tar.xz --strip-components=1
           echo "Clang installed at $(pwd)"
           ./bin/clang --version
 
 
-      - name: Configure kernel
-        run: |
-          cd kernel
-          export PATH="$HOME/aosp-clang/bin:$PATH"
-          make O=out ARCH=arm64 gki_defconfig
+
