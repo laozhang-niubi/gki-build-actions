@@ -1,4 +1,4 @@
-name: Build GKI 5.10.252 with Earlycon
+name: Build GKI 5.10.252
 
 on:
   workflow_dispatch:
@@ -7,44 +7,49 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y flex bison bc libssl-dev
 
-      - name: Checkout kernel source (android12-5.10-2026-04 = 5.10.252)
+      - name: Clone kernel source
         run: |
-          git clone --depth 1 --branch android12-5.10-2026-04 \
-            https://github.com/aosp-mirror/kernel_common.git kernel
+          git clone --depth 1 --branch android12-5.10.252_r00 \
+            https://android.googlesource.com/kernel/common kernel
           cd kernel
           git log --oneline -1
+
+      - name: Setup AOSP Clang 12.0.5 (clang-r416183b)
+        run: |
+          echo "Downloading AOSP clang-r416183b..."
+          mkdir -p ~/aosp-clang
+          cd ~/aosp-clang
+          wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/clang-r416183b.tar.gz -O clang.tar.gz
+          tar xzf clang.tar.gz
+          echo "Clang installed at $(pwd)"
+          ./bin/clang --version
 
       - name: Configure kernel
         run: |
           cd kernel
-          make O=out ARCH=arm64 LLVM=1 gki_defconfig
-          cat >> out/.config << 'EOF'
-          CONFIG_CMDLINE=earlycon initcall_debug
-          CONFIG_CMDLINE_EXTEND=y
-          EOF
-          make O=out ARCH=arm64 LLVM=1 olddefconfig
-          grep -E CONFIG_CMDLINE|CONFIG_CMDLINE_EXTEND out/.config
+          export PATH="$HOME/aosp-clang/bin:$PATH"
+          make O=out ARCH=arm64 gki_defconfig
+          ./scripts/config --file out/.config \
+            --set-str CONFIG_CMDLINE "earlycon initcall_debug" \
+            --enable CONFIG_CMDLINE_EXTEND
+          make O=out ARCH=arm64 olddefconfig
 
-      - name: Build kernel Image
+      - name: Build kernel
         run: |
           cd kernel
-          make O=out ARCH=arm64 LLVM=1 -j$(nproc) Image 2>&1 | tail -50
-          cp out/arch/arm64/boot/Image ../Image-5.10.252-earlycon
-          make O=out ARCH=arm64 LLVM=1 kernelrelease
+          export PATH="$HOME/aosp-clang/bin:$PATH"
+          make O=out ARCH=arm64 CC=clang LD=ld.lld -j$(nproc) 2>&1 | tee build.log
 
-      - name: Show summary
-        run: |
-          ls -lh Image-5.10.252-earlycon
-          file Image-5.10.252-earlycon
-          md5sum Image-5.10.252-earlycon
-
-      - name: Upload Image artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Image-5.10.252-earlycon
-          path: Image-5.10.252-earlycon
+          name: gki-kernel
+          path: |
+            kernel/out/arch/arm64/boot/Image*
+            kernel/out/.config
+            kernel/build.log
