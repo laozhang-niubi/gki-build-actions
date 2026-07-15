@@ -1,7 +1,9 @@
 name: Build GKI 5.10.252
 
+
 on:
   workflow_dispatch:
+
 
 jobs:
   build:
@@ -12,6 +14,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y flex bison bc libssl-dev
 
+
       - name: Clone kernel source
         run: |
           git clone --depth 1 --branch android12-5.10.252_r00 \
@@ -19,37 +22,20 @@ jobs:
           cd kernel
           git log --oneline -1
 
+
       - name: Setup AOSP Clang 12.0.5 (clang-r416183b)
         run: |
           echo "Downloading AOSP clang-r416183b..."
           mkdir -p ~/aosp-clang
           cd ~/aosp-clang
-          wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/clang-r416183b.tar.gz -O clang.tar.gz
+          wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/clang-r416183b.tar.gz -O clang.tar.gz
           tar xzf clang.tar.gz
           echo "Clang installed at $(pwd)"
           ./bin/clang --version
+
 
       - name: Configure kernel
         run: |
           cd kernel
           export PATH="$HOME/aosp-clang/bin:$PATH"
           make O=out ARCH=arm64 gki_defconfig
-          ./scripts/config --file out/.config \
-            --set-str CONFIG_CMDLINE "earlycon initcall_debug" \
-            --enable CONFIG_CMDLINE_EXTEND
-          make O=out ARCH=arm64 olddefconfig
-
-      - name: Build kernel
-        run: |
-          cd kernel
-          export PATH="$HOME/aosp-clang/bin:$PATH"
-          make O=out ARCH=arm64 CC=clang LD=ld.lld -j$(nproc) 2>&1 | tee build.log
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: gki-kernel
-          path: |
-            kernel/out/arch/arm64/boot/Image*
-            kernel/out/.config
-            kernel/build.log
