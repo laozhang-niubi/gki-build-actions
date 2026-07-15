@@ -47,13 +47,24 @@ jobs:
 
 
 
+      
       - name: Setup Clang 12 (LLVM 12.0.1)
         run: |
           echo "Downloading LLVM clang 12.0.1..."
-
-
-
-
+          mkdir -p ~/clang12
+          cd ~/clang12
+          wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz -O clang.tar.xz
+          tar xf clang.tar.xz --strip-components=1
+          echo "Clang installed at $(pwd)"
+          ./bin/clang --version
+          ./bin/ld.lld --version
+          # Create cross-compile symlinks
+          ln -s ld.lld bin/aarch64-linux-gnu-ld.lld
+          ln -s llvm-ar bin/aarch64-linux-gnu-llvm-ar
+          ln -s llvm-nm bin/aarch64-linux-gnu-llvm-nm
+          ln -s llvm-objcopy bin/aarch64-linux-gnu-llvm-objcopy
+          ln -s llvm-objdump bin/aarch64-linux-gnu-llvm-objdump
+          ln -s llvm-strip bin/aarch64-linux-gnu-llvm-strip
       - name: Configure kernel
         run: |
           cd kernel
