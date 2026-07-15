@@ -48,27 +48,17 @@ jobs:
 
 
       
-      - name: Setup Clang 12 (LLVM 12.0.1)
+      
+      - name: Setup AOSP Clang (clang-r416183b)
         run: |
-          echo Downloading LLVM clang 12.0.1...
-          mkdir -p ~/clang12
-          cd ~/clang12
-          wget -q https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz -O clang.tar.xz
-          tar xf clang.tar.xz --strip-components=1
-          echo Clang installed at $(pwd)
-          ./bin/clang --version
-          ./bin/ld.lld --version
-          # Create cross-compile symlinks
-          ln -s ld.lld bin/aarch64-linux-gnu-ld.lld
-          ln -s llvm-ar bin/aarch64-linux-gnu-llvm-ar
-          ln -s llvm-nm bin/aarch64-linux-gnu-llvm-nm
-          ln -s llvm-objcopy bin/aarch64-linux-gnu-llvm-objcopy
-          ln -s llvm-objdump bin/aarch64-linux-gnu-llvm-objdump
-          ln -s llvm-strip bin/aarch64-linux-gnu-llvm-strip
+          echo Cloning AOSP clang-r416183b...
+          git clone --depth 1 --branch clang-r416183b https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 ~/aosp-clang
+          echo Clang installed at ~/aosp-clang
+          ~/aosp-clang/bin/clang --version
       - name: Configure kernel
         run: |
           cd kernel
-          export PATH=$HOME/clang12/bin:$PATH
+          export PATH=$HOME/aosp-clang/bin:$PATH
           export ARCH=arm64
           export CLANG_TRIPLE=aarch64-linux-gnu-
           scripts/kconfig/merge_config.sh arch/arm64/configs/gki_defconfig <(echo 'CONFIG_CMDLINE=earlycon initcall_debug')
@@ -79,7 +69,7 @@ jobs:
       - name: Build kernel
         run: |
           cd kernel
-          export PATH=$HOME/clang12/bin:$PATH
+          export PATH=$HOME/aosp-clang/bin:$PATH
           export ARCH=arm64
           export CLANG_TRIPLE=aarch64-linux-gnu-
           make LLVM=1 -j$(nproc) Image.gz modules dtbs
