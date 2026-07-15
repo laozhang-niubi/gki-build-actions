@@ -53,12 +53,12 @@ jobs:
         run: |
           echo "Cloning AOSP llvm-r416183..."
           git clone --depth 1 --branch llvm-r416183 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 ~/aosp-clang
-          echo "Clang installed at ~/aosp-clang/clang-r416183"
-          ~/aosp-clang/clang-r416183/bin/clang --version
+          echo "Clang installed at ~/aosp-clang"
+          ~/aosp-clang/bin/clang --version
       - name: Configure kernel
         run: |
           cd kernel
-          export PATH=$HOME/aosp-clang/bin:$PATH
+          export PATH=$HOME/aosp-clang/clang-r416183/bin:$PATH
           export ARCH=arm64
           export CLANG_TRIPLE=aarch64-linux-gnu-
           scripts/kconfig/merge_config.sh arch/arm64/configs/gki_defconfig <(echo 'CONFIG_CMDLINE=earlycon initcall_debug')
@@ -69,7 +69,7 @@ jobs:
       - name: Build kernel
         run: |
           cd kernel
-          export PATH=$HOME/aosp-clang/bin:$PATH
+          export PATH=$HOME/aosp-clang/clang-r416183/bin:$PATH
           export ARCH=arm64
           export CLANG_TRIPLE=aarch64-linux-gnu-
           make LLVM=1 -j$(nproc) Image.gz modules dtbs
