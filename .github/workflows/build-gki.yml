@@ -1,1 +1,50 @@
+name: Build GKI 5.10.252 with Earlycon
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flex bison bc libssl-dev
+
+      - name: Checkout kernel source (android12-5.10-2026-04 = 5.10.252)
+        run: |
+          git clone --depth 1 --branch android12-5.10-2026-04 \
+            https://github.com/aosp-mirror/kernel_common.git kernel
+          cd kernel
+          git log --oneline -1
+
+      - name: Configure kernel
+        run: |
+          cd kernel
+          make O=out ARCH=arm64 LLVM=1 gki_defconfig
+          cat >> out/.config << 'EOF'
+          CONFIG_CMDLINE=earlycon initcall_debug
+          CONFIG_CMDLINE_EXTEND=y
+          EOF
+          make O=out ARCH=arm64 LLVM=1 olddefconfig
+          grep -E CONFIG_CMDLINE|CONFIG_CMDLINE_EXTEND out/.config
+
+      - name: Build kernel Image
+        run: |
+          cd kernel
+          make O=out ARCH=arm64 LLVM=1 -j$(nproc) Image 2>&1 | tail -50
+          cp out/arch/arm64/boot/Image ../Image-5.10.252-earlycon
+          make O=out ARCH=arm64 LLVM=1 kernelrelease
+
+      - name: Show summary
+        run: |
+          ls -lh Image-5.10.252-earlycon
+          file Image-5.10.252-earlycon
+          md5sum Image-5.10.252-earlycon
+
+      - name: Upload Image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Image-5.10.252-earlycon
+          path: Image-5.10.252-earlycon
