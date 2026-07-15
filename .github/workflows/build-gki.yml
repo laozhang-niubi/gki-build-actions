@@ -53,8 +53,8 @@ jobs:
         run: |
           echo "Cloning AOSP llvm-r416183..."
           git clone --depth 1 --branch llvm-r416183 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 ~/aosp-clang
-          echo "Clang installed at ~/aosp-clang"
-          ~/aosp-clang/bin/clang --version
+          echo "Clang installed at ~/aosp-clang/clang-r416183"
+          ~/aosp-clang/clang-r416183/bin/clang --version
       - name: Configure kernel
         run: |
           cd kernel
