@@ -5,9 +5,11 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - run: |
-          git clone --depth 1 --branch llvm-r416183 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 ~/aosp-clang
-      - run: |
-          export PATH="$HOME/aosp-clang/clang-r416183/bin:$PATH"
-          make O=out ARCH=arm64 LLVM=1 CLANG_TRIPLE=aarch64-linux-gnu- gki_defconfig
-          make O=out ARCH=arm64 LLVM=1 CLANG_TRIPLE=aarch64-linux-gnu- -j4 Image.gz
+      - run: git clone --depth 1 --branch android12-5.10.252_r00 https://android.googlesource.com/kernel/common kernel
+      - run: echo built
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kernel
+          path: |
+            kernel/out/Image
+            kernel/out/Image.gz
