@@ -1,47 +1,7 @@
-name: Build GKI 5.10.252
-
-
-on:
-  workflow_dispatch:
-
-
+name: test
+on: workflow_dispatch
 jobs:
-  build:
-    runs-on: ubuntu-24.04
+  test:
+    runs-on: ubuntu-latest
     steps:
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y flex bison bc libssl-dev
-
-
-      - name: Clone kernel source
-        run: |
-          git clone --depth 1 --branch android12-5.10.252_r00 \
-            https://android.googlesource.com/kernel/common kernel
-          cd kernel
-          git log --oneline -1
-
-
-      - name: Patch kernel for clang 12 compat
-        run: |
-          cd kernel
-          python3 -c "
-          path = 'arch/arm64/include/asm/stack_pointer.h'
-          with open(path) as f:
-              c = f.read()
-          old = 'register unsigned long current_stack_pointer asm (\"sp\");'
-          new = '/* Patched for clang 12 compat */\n#define current_stack_pointer (__extension__({ unsigned long __sp; asm volatile(\"mov %0, sp\" : \"=r\"(__sp)); __sp; }))\n'
-          c = c.replace(old, new)
-          with open(path, 'w') as f:
-              f.write(c)
-          print('stack_pointer.h patched')
-          "
-          sed -i 's/"I" (KGDB_COMPILED_DBG_BRK_IMM)/"i" (KGDB_COMPILED_DBG_BRK_IMM)/' arch/arm64/include/asm/kgdb.h
-          echo "Patches applied"
-
-      - name: Setup AOSP Clang (llvm-r416183)
-        run: |
-          echo "Cloning AOSP llvm-r416183..."
-          git clone --depth 1 --branch llvm-r416183 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 ~/aosp-clang
-
+      - run: echo hi
