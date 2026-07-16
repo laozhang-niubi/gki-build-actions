@@ -15,7 +15,7 @@ jobs:
           make O=out ARCH=arm64 LLVM=1 CLANG_TRIPLE=aarch64-linux-gnu- -j4 Image.gz modules dtbs 2>&1 | tee build.log
       - uses: actions/upload-artifact@v4
         with:
-          name: kernel
+          name: kernel-artifact
           path: kernel/out/arch/arm64/boot/Image.gz
       - uses: actions/upload-artifact@v4
         if: always()
