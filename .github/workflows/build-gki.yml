@@ -7,9 +7,9 @@ jobs:
     steps:
       - run: echo setup
       - run: |
-          make O=out gki_defconfig
-          make O=out -j4 Image.gz modules dtbs 2>&1 | tee build.log
+          make gki_defconfig
+          make -j4 Image.gz 2>&1 | tee build.log
       - uses: actions/upload-artifact@v4
         with:
           name: test
-          path: out/Image.gz
+          path: Image.gz
