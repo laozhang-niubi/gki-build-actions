@@ -5,10 +5,11 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - run: echo hi
-      - name: Upload log
-        if: always()
-        uses: actions/upload-artifact@v4
+      - run: |
+          cd kernel
+          make O=out ARCH=arm64 gki_defconfig
+          make O=out ARCH=arm64 -j4 Image.gz 2>&1 | tee build.log
+      - uses: actions/upload-artifact@v4
         with:
-          name: log
-          path: build.log
+          name: kernel
+          path: kernel/out/arch/arm64/boot/Image.gz
