@@ -1,7 +1,16 @@
-name: test
-on: workflow_dispatch
+name: Build GKI 5.10.252
+on:
+  workflow_dispatch:
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-24.04
     steps:
-      - run: echo hi
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flex bison bc libssl-dev
+      - name: Clone kernel source
+        run: |
+          git clone --depth 1 --branch android12-5.10.252_r00 https://android.googlesource.com/kernel/common kernel
+          cd kernel
+          git log --oneline -1
