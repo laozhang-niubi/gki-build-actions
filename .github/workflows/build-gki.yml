@@ -5,8 +5,10 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
+      - run: git clone --depth 1 --branch llvm-r416183 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 ~/clang
       - run: |
           cd kernel
+          export PATH="$HOME/clang/clang-r416183/bin:$PATH"
           make O=out ARCH=arm64 gki_defconfig
           make O=out ARCH=arm64 -j4 Image.gz 2>&1 | tee build.log
       - uses: actions/upload-artifact@v4
