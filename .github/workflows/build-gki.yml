@@ -11,8 +11,8 @@ jobs:
       - run: |
           cd kernel
           export PATH="$HOME/aosp-clang/clang-r416183/bin:$PATH"
-          make O=out ARCH=arm64 LLVM=1 CLANG_TRIPLE=aarch64-linux-gnu- defconfig
-          make O=out ARCH=arm64 LLVM=1 CLANG_TRIPLE=aarch64-linux-gnu- -j4 Image.gz 2>&1 | tee build.log
+          make O=out ARCH=arm64 LLVM=1 CLANG_TRIPLE=aarch64-linux-gnu- gki_defconfig
+          make O=out ARCH=arm64 LLVM=1 CLANG_TRIPLE=aarch64-linux-gnu- -j4 Image.gz
       - uses: actions/upload-artifact@v4
         with:
           name: kernel
