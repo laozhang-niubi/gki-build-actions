@@ -5,12 +5,18 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
+      - run: sudo apt-get install -y flex bison
       - run: git clone --depth 1 --branch android12-5.10.252_r00 https://android.googlesource.com/kernel/common kernel
-      - run: echo built
+      - run: git clone --depth 1 --branch llvm-r416183 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 ~/aosp-clang
+      - run: |
+          cd kernel
+          export PATH="$HOME/aosp-clang/clang-r416183/bin:$PATH"
+          make O=out ARCH=arm64 LLVM=1 CLANG_TRIPLE=aarch64-linux-gnu- defconfig
+          make O=out ARCH=arm64 LLVM=1 CLANG_TRIPLE=aarch64-linux-gnu- -j4 Image.gz 2>&1 | tee build.log
       - uses: actions/upload-artifact@v4
         with:
           name: kernel
-          path: kernel/out/Image.gz
+          path: kernel/out/arch/arm64/boot/Image.gz
       - name: Upload log
         if: always()
         uses: actions/upload-artifact@v4
