@@ -7,7 +7,10 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - run: echo "build"
+            - run: |
+          git clone --depth 1 --branch android12-5.10.252_r00 https://android.googlesource.com/kernel/common kernel
+          cd kernel
+          git log --oneline -1
       - uses: actions/upload-artifact@v4
         with:
           name: test
