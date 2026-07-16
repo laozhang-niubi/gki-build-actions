@@ -1,22 +1,10 @@
 name: Build GKI 5.10.252
-
 on:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-                  - run: |
-          export PATH="/tmp/bin:$PATH"
-          make O=out ARCH=arm64 LLVM=1 gki_defconfig
-          make O=out ARCH=arm64 LLVM=1 -j$(nproc) Image.gz
-
-- run: |
-          git clone --depth 1 --branch android12-5.10.252_r00 https://android.googlesource.com/kernel/common kernel
-          cd kernel
-          git log --oneline -1
-      - uses: actions/upload-artifact@v4
-        with:
-          name: test
-          path: test.txt
+      - run: |
+          make -j$(nproc) Image.gz 2>&1 | tee build.log
+          echo "exit: $?"
